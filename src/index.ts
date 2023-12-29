@@ -80,7 +80,7 @@ camera.position.z = 5;
 setUpMouse([updateCameraPosition], [updateCameraRotation], [updateCameraZoom]);
 
 const light = new THREE.AmbientLight(0x404040); // soft white light
-const pointLight = new THREE.PointLight(0xffffff, 50, 100);
+const pointLight = new THREE.PointLight(0xffffff, 50, 500);
 pointLight.position.set(0, 0, 10);
 
 const loader = new GLTFLoader();
@@ -101,7 +101,7 @@ loader.load(
   }
 );
 
-const hexagonGrid = drawHexagonGrid(10, 10, 1);
+const hexagonGrid = drawHexagonGrid(15, 15, 1);
 
 scene.add(hexagonGrid);
 scene.add(light);

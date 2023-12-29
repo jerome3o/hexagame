@@ -17,7 +17,24 @@ function getSide(apothem: number) {
   return apothem / (Math.sqrt(3) / 2);
 }
 
-function drawHexagon(x: number, y: number, radius: number): THREE.Line {
+function drawHexagon(x: number, y: number, radius: number) {
+  const hexGeometry = new THREE.CylinderGeometry(radius, radius, 0.2, 6);
+  const hexMaterial = new THREE.MeshPhongMaterial({
+    color: 0x00ff00,
+    side: THREE.DoubleSide,
+  });
+  const hex = new THREE.Mesh(hexGeometry, hexMaterial);
+  hex.position.x = x;
+  hex.position.y = y;
+  hex.rotateOnAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2.0);
+  return hex;
+}
+
+function drawHexagonWithLines(
+  x: number,
+  y: number,
+  radius: number
+): THREE.Line {
   const material = new THREE.LineBasicMaterial({ color: 0x0000ff });
   const points = [];
   const sides = 6;
