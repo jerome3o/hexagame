@@ -1,11 +1,13 @@
 {
   "devDependencies": {
     "@types/three": "^0.160.0",
-    "three": "^0.160.0",
     "typescript": "^5.3.3",
     "vite": "^5.0.10"
   },
   "scripts": {
-    "start": "vite"
+    "start": "vite src --host 0.0.0.0"
+  },
+  "dependencies": {
+    "three": "^0.160.0"
   }
 }

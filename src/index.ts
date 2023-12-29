@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 let frame = 0;
 
@@ -219,7 +220,6 @@ function updateCameraPosition(
   // update camera position
   cameralocation.x += delta.x / 100.0;
   cameralocation.y -= delta.y / 100.0;
-  updateCamera();
 }
 
 function updateCameraRotation(
@@ -231,14 +231,12 @@ function updateCameraRotation(
 
   // update camera rotation
   cameraAngle -= deltaX / 500.0;
-  updateCamera();
 }
 
 function updateCameraZoom(scrollDelta: number) {
   // update camera zoom
   cameraHeight = cameraHeight + (cameraHeight * scrollDelta) / 1000.0;
   cameraRadius = cameraRadius + (cameraRadius * scrollDelta) / 1000.0;
-  updateCamera();
 }
 
 function updateCamera() {
@@ -302,14 +300,40 @@ for (let i = 0.0; i < 10.0; i++) {
 
 const grids = drawGridlines();
 
+const light = new THREE.AmbientLight(0x404040); // soft white light
+const pointLight = new THREE.PointLight(0xffffff, 50, 100);
+pointLight.position.set(0, 0, 10);
+
+const loader = new GLTFLoader();
+loader.load(
+  "/avocado/Avocado.gltf",
+  (gltf: any) => {
+    // scale up by 100
+    gltf.scene.scale.set(10, 10, 10);
+    gltf.scene.position.set(0, 0, 1);
+    scene.add(gltf.scene);
+  },
+  // called while loading is progressing
+  function (xhr: any) {
+    console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+  },
+  (error: any) => {
+    console.log(error);
+  }
+);
+
 scene.add(grids);
 
 // scene.add(cube);
 scene.add(hexagon);
+scene.add(light);
+scene.add(pointLight);
+scene.background = new THREE.Color(0xffffff);
 
 function animate() {
   requestAnimationFrame(animate);
   updateDebugText(camera);
+  updateCamera();
 
   renderer.render(scene, camera);
   frame++;
