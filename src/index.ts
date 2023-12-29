@@ -89,18 +89,6 @@ function setUpMouse(
   });
 }
 
-function moveCube(oldPosition: MousePosition, newPosition: MousePosition) {
-  // calculate delta mouse movement
-  const deltaMove = {
-    x: newPosition.x - oldPosition.x,
-    y: newPosition.y - oldPosition.y,
-  };
-
-  // rotate cube
-  cube.rotation.x += deltaMove.y * 0.01;
-  cube.rotation.y += deltaMove.x * 0.01;
-}
-
 function drawHexagon(x: number, y: number, radius: number) {
   const material = new THREE.LineBasicMaterial({ color: 0x0000ff });
   const points = [];
@@ -157,9 +145,33 @@ function getSide(apothem: number) {
   return apothem / (Math.sqrt(3) / 2);
 }
 
+function getDebugInfoString(camera: THREE.PerspectiveCamera) {
+  // return {
+  //   fov: camera.fov,
+  //   aspect: camera.aspect,
+  //   near: camera.near,
+  //   far: camera.far,
+  //   position: camera.position,
+  //   rotation: camera.rotation,
+  // };
+  return `fov: ${camera.fov}
+aspect: ${camera.aspect}
+near: ${camera.near}
+far: ${camera.far}
+position: ${camera.position.x}, ${camera.position.y}, ${camera.position.z}
+rotation: ${camera.rotation.x}, ${camera.rotation.y}, ${camera.rotation.z}`;
+}
+
+function updateDebugText(camera: THREE.PerspectiveCamera) {
+  const debugText = document.getElementById("info");
+  if (debugText) {
+    debugText.innerText = getDebugInfoString(camera);
+  }
+}
+
 // initialise
 camera.position.z = 5;
-setUpMouse([moveCube]);
+setUpMouse([]);
 
 const cube = makeCube();
 
@@ -200,6 +212,7 @@ scene.add(hexagon);
 
 function animate() {
   requestAnimationFrame(animate);
+  updateDebugText(camera);
 
   renderer.render(scene, camera);
   frame++;
