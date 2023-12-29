@@ -213,9 +213,12 @@ function updateCameraPosition(
   const deltaX = newPosition.x - oldPosition.x;
   const deltaY = newPosition.y - oldPosition.y;
 
+  const delta = new THREE.Vector2(deltaX, deltaY);
+  delta.rotateAround(new THREE.Vector2(0, 0), -cameraAngle+Math.PI/2.0);
+
   // update camera position
-  cameralocation.x -= deltaX / 100.0;
-  cameralocation.y += deltaY / 100.0;
+  cameralocation.x += delta.x / 100.0;
+  cameralocation.y -= delta.y / 100.0;
   updateCamera();
 }
 
@@ -233,7 +236,8 @@ function updateCameraRotation(
 
 function updateCameraZoom(scrollDelta: number) {
   // update camera zoom
-  cameraHeight -= scrollDelta / 100.0;
+  cameraHeight = cameraHeight - (cameraHeight * scrollDelta / 1000.0);
+  cameraRadius = cameraRadius - (cameraRadius * scrollDelta / 1000.0);
   updateCamera();
 }
 
@@ -273,10 +277,9 @@ const hexSide = getSide(hexApothem);
 
 let cameralocation = new THREE.Vector2(0, 0);
 let cameraHeight = 5;
-let cameraRadius = 2;
+let cameraRadius = 5;
 let cameraAngle = 0;
 
-updateCamera();
 
 console.log({ hexApothem, hexRadius });
 
