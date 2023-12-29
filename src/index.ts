@@ -121,7 +121,7 @@ function setUpMouse(
   document.addEventListener("wheel", (event) => {
     // call functions
     scroll.forEach((f) => f(event.deltaY));
-  }
+  });
 }
 
 function drawHexagon(x: number, y: number, radius: number) {
@@ -214,7 +214,7 @@ function updateCameraPosition(
   const deltaY = newPosition.y - oldPosition.y;
 
   const delta = new THREE.Vector2(deltaX, deltaY);
-  delta.rotateAround(new THREE.Vector2(0, 0), -cameraAngle+Math.PI/2.0);
+  delta.rotateAround(new THREE.Vector2(0, 0), -cameraAngle + Math.PI / 2.0);
 
   // update camera position
   cameralocation.x += delta.x / 100.0;
@@ -230,14 +230,14 @@ function updateCameraRotation(
   const deltaX = newPosition.x - oldPosition.x;
 
   // update camera rotation
-  cameraAngle += deltaX / 100.0;
+  cameraAngle -= deltaX / 500.0;
   updateCamera();
 }
 
 function updateCameraZoom(scrollDelta: number) {
   // update camera zoom
-  cameraHeight = cameraHeight - (cameraHeight * scrollDelta / 1000.0);
-  cameraRadius = cameraRadius - (cameraRadius * scrollDelta / 1000.0);
+  cameraHeight = cameraHeight + (cameraHeight * scrollDelta) / 1000.0;
+  cameraRadius = cameraRadius + (cameraRadius * scrollDelta) / 1000.0;
   updateCamera();
 }
 
@@ -260,7 +260,6 @@ function updateCameraInner(
   camera.lookAt(cameralocation.x, cameralocation.y, 0);
   // ensure top of camera is always pointing up
   camera.up.set(0, 0, 1);
-
 }
 
 // initialise
@@ -280,7 +279,6 @@ let cameraHeight = 5;
 let cameraRadius = 5;
 let cameraAngle = 0;
 
-
 console.log({ hexApothem, hexRadius });
 
 // tessellate 100 hexagons
@@ -295,7 +293,7 @@ for (let i = 0.0; i < 10.0; i++) {
     }
 
     // draw hexagon
-    const hex = drawHexagon(x, y, hexRadius);
+    const hex = drawHexagon(x, y, hexRadius * 0.9);
 
     // add hexagon to group
     hexagon.add(hex);
@@ -311,7 +309,7 @@ scene.add(hexagon);
 
 function animate() {
   requestAnimationFrame(animate);
-  updateDebugText(camera)
+  updateDebugText(camera);
 
   renderer.render(scene, camera);
   frame++;
