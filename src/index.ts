@@ -43,20 +43,31 @@ window.addEventListener("resize", () => {
 });
 
 function setUpMouse(
-  functions: ((
+  leftClickDrag: ((
     oldPosition: MousePosition,
     newPosition: MousePosition
-  ) => void)[]
+  ) => void)[],
+  rightClickDrag: ((
+    oldPosition: MousePosition,
+    newPosition: MousePosition
+  ) => void)[] = []
 ) {
   // listen for mouse drag
-  let isDragging = false;
+  let isDraggingLeft = false;
+  let isDraggingRight = false;
+
   let previousMousePosition = {
     x: 0,
     y: 0,
   };
 
   document.addEventListener("mousedown", (event) => {
-    isDragging = true;
+    // check if left click
+    if (event.button === 0) {
+      isDraggingLeft = true;
+    } else if (event.button === 2) {
+      isDraggingRight = true;
+    }
     previousMousePosition = {
       x: event.offsetX,
       y: event.offsetY,
@@ -64,22 +75,39 @@ function setUpMouse(
   });
 
   document.addEventListener("mouseup", (event) => {
-    isDragging = false;
+    // check if left click
+    if (event.button === 0) {
+      isDraggingLeft = false;
+    } else if (event.button === 2) {
+      isDraggingRight = false;
+    }
   });
 
   document.addEventListener("mousemove", (event) => {
     // only update if dragging
-    if (!isDragging) {
+    if (!isDraggingLeft && !isDraggingRight) {
       return;
     }
 
-    // call functions
-    functions.forEach((f) =>
-      f(previousMousePosition, {
-        x: event.offsetX,
-        y: event.offsetY,
-      })
-    );
+    if (isDraggingLeft) {
+      // call functions
+      leftClickDrag.forEach((f) =>
+        f(previousMousePosition, {
+          x: event.offsetX,
+          y: event.offsetY,
+        })
+      );
+    }
+
+    if (isDraggingRight) {
+      // call functions
+      rightClickDrag.forEach((f) =>
+        f(previousMousePosition, {
+          x: event.offsetX,
+          y: event.offsetY,
+        })
+      );
+    }
 
     // update previous mouse position
     previousMousePosition = {
@@ -169,9 +197,41 @@ function updateDebugText(camera: THREE.PerspectiveCamera) {
   }
 }
 
+function updateCameraPosition(
+  oldPosition: MousePosition,
+  newPosition: MousePosition
+) {
+  // calculate delta
+  const deltaX = newPosition.x - oldPosition.x;
+  const deltaY = newPosition.y - oldPosition.y;
+
+  // update camera position
+  camera.position.x -= deltaX / 100.0;
+  camera.position.y += deltaY / 100.0;
+}
+
+function updateCameraRotation(
+  oldPosition: MousePosition,
+  newPosition: MousePosition
+) {
+  // calculate delta
+  const deltaX = newPosition.x - oldPosition.x;
+  const deltaY = newPosition.y - oldPosition.y;
+
+  // update camera rotation
+  camera.rotation.x += deltaY / 100.0;
+  camera.rotation.y += deltaX / 100.0;
+}
+
+function updateCameraZoom(scrollDelta: number) {
+  // update camera zoom
+  camera.position.z -= scrollDelta / 100.0;
+}
+
 // initialise
 camera.position.z = 5;
-setUpMouse([]);
+
+setUpMouse([updateCameraPosition], [updateCameraRotation]);
 
 const cube = makeCube();
 
