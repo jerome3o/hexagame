@@ -1,5 +1,12 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import {
+  getApothem,
+  getRadius,
+  getSide,
+  drawHexagon,
+  drawHexagonGrid,
+} from "./game/hexagons";
 
 let frame = 0;
 
@@ -19,18 +26,6 @@ const camera = new THREE.PerspectiveCamera(
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
-
-function makeCube() {
-  const geometry = new THREE.BoxGeometry(2, 1, 1);
-
-  // with wireframe
-  const material = new THREE.MeshBasicMaterial({
-    color: 0x00ff00,
-    wireframe: true,
-  });
-  const cube = new THREE.Mesh(geometry, material);
-  return cube;
-}
 
 // listen for window resize
 window.addEventListener("resize", () => {
@@ -125,28 +120,6 @@ function setUpMouse(
   });
 }
 
-function drawHexagon(x: number, y: number, radius: number) {
-  const material = new THREE.LineBasicMaterial({ color: 0x0000ff });
-  const points = [];
-  const sides = 6;
-
-  for (let i = 0; i < sides; i++) {
-    const angle = (i * (Math.PI * 2)) / sides;
-    points.push(
-      new THREE.Vector2(
-        x + radius * Math.sin(angle),
-        y + radius * Math.cos(angle)
-      )
-    );
-  }
-  // add first point again to close the shape
-  points.push(points[0]);
-
-  const geometry = new THREE.BufferGeometry().setFromPoints(points);
-  const line = new THREE.Line(geometry, material);
-  return line;
-}
-
 function drawGridlines() {
   //  draw vertical and horizontal lines
   // 1 unit apart
@@ -167,18 +140,6 @@ function drawGridlines() {
   const geometry = new THREE.BufferGeometry().setFromPoints(points);
   const line = new THREE.Line(geometry, material);
   return line;
-}
-
-function getApothem(radius: number) {
-  return radius * (Math.sqrt(3) / 2.0);
-}
-
-function getRadius(apothem: number) {
-  return apothem / (Math.sqrt(3) / 2.0);
-}
-
-function getSide(apothem: number) {
-  return apothem / (Math.sqrt(3) / 2);
 }
 
 function getDebugInfoString(camera: THREE.PerspectiveCamera) {
@@ -268,36 +229,6 @@ setUpMouse([updateCameraPosition], [updateCameraRotation], [updateCameraZoom]);
 // const hexRadius = 1;
 // const hexApothem = getApothem(hexRadius);
 
-const hexApothem = 1;
-const hexRadius = getRadius(hexApothem);
-const hexSide = getSide(hexApothem);
-
-let cameralocation = new THREE.Vector2(0, 0);
-let cameraHeight = 5;
-let cameraRadius = 5;
-let cameraAngle = 0;
-
-console.log({ hexApothem, hexRadius });
-
-// tessellate 100 hexagons
-const hexagon = new THREE.Group();
-for (let i = 0.0; i < 10.0; i++) {
-  for (let j = 0.0; j < 10.0; j++) {
-    // calculate position
-    let x = hexApothem * 2 * i;
-    let y = (hexRadius + hexSide / 2.0) * j;
-    if (j % 2 === 1) {
-      x += hexApothem;
-    }
-
-    // draw hexagon
-    const hex = drawHexagon(x, y, hexRadius * 0.9);
-
-    // add hexagon to group
-    hexagon.add(hex);
-  }
-}
-
 const grids = drawGridlines();
 
 const light = new THREE.AmbientLight(0x404040); // soft white light
@@ -322,10 +253,15 @@ loader.load(
   }
 );
 
-scene.add(grids);
+let cameralocation = new THREE.Vector2(0, 0);
+let cameraHeight = 5;
+let cameraRadius = 5;
+let cameraAngle = 0;
 
-// scene.add(cube);
-scene.add(hexagon);
+const hexagonGrid = drawHexagonGrid(10, 10, 1);
+
+scene.add(grids);
+scene.add(hexagonGrid);
 scene.add(light);
 scene.add(pointLight);
 scene.background = new THREE.Color(0xffffff);

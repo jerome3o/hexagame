@@ -8,6 +8,7 @@
     "start": "vite src --host 0.0.0.0"
   },
   "dependencies": {
+    "cannon-es": "^0.20.0",
     "three": "^0.160.0"
   }
 }
