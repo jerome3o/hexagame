@@ -1,8 +1,14 @@
 import * as THREE from "three";
+import { TileGrid, Tile, TILE_COLOURS } from "./tile";
 
 interface Point {
   x: number;
   y: number;
+}
+
+interface HexPoint {
+  q: number;
+  r: number;
 }
 
 function getApothem(radius: number) {
@@ -17,10 +23,31 @@ function getSide(apothem: number) {
   return apothem / (Math.sqrt(3) / 2);
 }
 
-function drawHexagon(x: number, y: number, radius: number) {
+function hexPointToXy(
+  point: HexPoint,
+  radius: number,
+  offset: Point = { x: 0, y: 0 }
+) {
+  const apothem = getApothem(radius);
+  const side = getSide(apothem);
+
+  // let x = hexApothem * 2 * i + center.x;
+  // let y = (hexRadius + hexSide / 2.0) * j + center.y;
+
+  const x = apothem * 2 * point.q + offset.x + apothem * point.r;
+  const y = (radius + side / 2.0) * point.r + offset.y;
+  return { x, y };
+}
+
+function drawHexagon(
+  x: number,
+  y: number,
+  radius: number,
+  color: number = 0x00ff00
+) {
   const hexGeometry = new THREE.CylinderGeometry(radius, radius, 0.2, 6);
   const hexMaterial = new THREE.MeshPhongMaterial({
-    color: 0x00ff00,
+    color: color,
     side: THREE.DoubleSide,
   });
   const hex = new THREE.Mesh(hexGeometry, hexMaterial);
@@ -28,32 +55,6 @@ function drawHexagon(x: number, y: number, radius: number) {
   hex.position.y = y;
   hex.rotateOnAxis(new THREE.Vector3(1, 0, 0), Math.PI / 2.0);
   return hex;
-}
-
-function drawHexagonWithLines(
-  x: number,
-  y: number,
-  radius: number
-): THREE.Line {
-  const material = new THREE.LineBasicMaterial({ color: 0x0000ff });
-  const points = [];
-  const sides = 6;
-
-  for (let i = 0; i < sides; i++) {
-    const angle = (i * (Math.PI * 2)) / sides;
-    points.push(
-      new THREE.Vector2(
-        x + radius * Math.sin(angle),
-        y + radius * Math.cos(angle)
-      )
-    );
-  }
-  // add first point again to close the shape
-  points.push(points[0]);
-
-  const geometry = new THREE.BufferGeometry().setFromPoints(points);
-  const line = new THREE.Line(geometry, material);
-  return line;
 }
 
 function drawHexagonGrid(
@@ -88,4 +89,32 @@ function drawHexagonGrid(
   return hexagon;
 }
 
-export { getApothem, getRadius, getSide, drawHexagon, drawHexagonGrid };
+function drawTile(tile: Tile, coordinate: Point, radius: number = 1) {
+  const hex = drawHexagon(
+    coordinate.x,
+    coordinate.y,
+    radius,
+    TILE_COLOURS[tile.type]
+  );
+  return hex;
+}
+
+function drawTileGrid(tileGrid: TileGrid, radius: number = 1) {
+  const hexagon = new THREE.Group();
+  tileGrid.getTiles().forEach((tile, coordinate) => {
+    const point = hexPointToXy(coordinate, radius);
+    const hex = drawTile(tile, point, radius);
+    hexagon.add(hex);
+  });
+  return hexagon;
+}
+
+export {
+  getApothem,
+  getRadius,
+  getSide,
+  drawHexagon,
+  drawHexagonGrid,
+  drawTile,
+  drawTileGrid,
+};

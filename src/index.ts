@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { drawHexagonGrid } from "./game/hexagons";
+import { drawHexagonGrid, drawTileGrid } from "./game/hexagons";
 import { setUpMouse } from "./game/mouse";
 import {
   updateCameraInner,
@@ -12,6 +12,7 @@ import {
   cameraRadius,
   cameraLocation,
 } from "./game/camera";
+import { EXAMPLE_GRID } from "./game/tile";
 
 let frame = 0;
 
@@ -101,7 +102,8 @@ loader.load(
   }
 );
 
-const hexagonGrid = drawHexagonGrid(15, 15, 1);
+// const hexagonGrid = drawHexagonGrid(15, 15, 1);
+const hexagonGrid = drawTileGrid(EXAMPLE_GRID, 1);
 
 scene.add(hexagonGrid);
 scene.add(light);
