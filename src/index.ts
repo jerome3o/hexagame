@@ -50,7 +50,8 @@ function setUpMouse(
   rightClickDrag: ((
     oldPosition: MousePosition,
     newPosition: MousePosition
-  ) => void)[] = []
+  ) => void)[] = [],
+  scroll: ((scrollDelta: number) => void)[] = []
 ) {
   // listen for mouse drag
   let isDraggingLeft = false;
@@ -115,6 +116,12 @@ function setUpMouse(
       y: event.offsetY,
     };
   });
+
+  // listen for mouse scroll
+  document.addEventListener("wheel", (event) => {
+    // call functions
+    scroll.forEach((f) => f(event.deltaY));
+  }
 }
 
 function drawHexagon(x: number, y: number, radius: number) {
@@ -187,7 +194,8 @@ aspect: ${camera.aspect}
 near: ${camera.near}
 far: ${camera.far}
 position: ${camera.position.x}, ${camera.position.y}, ${camera.position.z}
-rotation: ${camera.rotation.x}, ${camera.rotation.y}, ${camera.rotation.z}`;
+rotation: ${camera.rotation.x}, ${camera.rotation.y}, ${camera.rotation.z}
+gameRotation: ${cameraAngle}`;
 }
 
 function updateDebugText(camera: THREE.PerspectiveCamera) {
@@ -206,34 +214,55 @@ function updateCameraPosition(
   const deltaY = newPosition.y - oldPosition.y;
 
   // update camera position
-  camera.position.x -= deltaX / 100.0;
-  camera.position.y += deltaY / 100.0;
+  cameralocation.x -= deltaX / 100.0;
+  cameralocation.y += deltaY / 100.0;
+  updateCamera();
 }
 
 function updateCameraRotation(
   oldPosition: MousePosition,
   newPosition: MousePosition
 ) {
-  // calculate delta
+  // // calculate delta
   const deltaX = newPosition.x - oldPosition.x;
-  const deltaY = newPosition.y - oldPosition.y;
 
   // update camera rotation
-  camera.rotation.x += deltaY / 100.0;
-  camera.rotation.y += deltaX / 100.0;
+  cameraAngle += deltaX / 100.0;
+  updateCamera();
 }
 
 function updateCameraZoom(scrollDelta: number) {
   // update camera zoom
-  camera.position.z -= scrollDelta / 100.0;
+  cameraHeight -= scrollDelta / 100.0;
+  updateCamera();
+}
+
+function updateCamera() {
+  updateCameraInner(cameralocation, cameraHeight, cameraRadius, cameraAngle);
+  updateDebugText(camera);
+}
+
+function updateCameraInner(
+  cameralocation: THREE.Vector2,
+  cameraHeight: number,
+  cameraRadius: number,
+  cameraAngle: number
+) {
+  // calculate camera position
+  camera.position.x = cameralocation.x + cameraRadius * Math.cos(cameraAngle);
+  camera.position.y = cameralocation.y + cameraRadius * Math.sin(cameraAngle);
+  camera.position.z = cameraHeight;
+
+  camera.lookAt(cameralocation.x, cameralocation.y, 0);
+  // ensure top of camera is always pointing up
+  camera.up.set(0, 0, 1);
+
 }
 
 // initialise
 camera.position.z = 5;
 
-setUpMouse([updateCameraPosition], [updateCameraRotation]);
-
-const cube = makeCube();
+setUpMouse([updateCameraPosition], [updateCameraRotation], [updateCameraZoom]);
 
 // const hexRadius = 1;
 // const hexApothem = getApothem(hexRadius);
@@ -241,6 +270,13 @@ const cube = makeCube();
 const hexApothem = 1;
 const hexRadius = getRadius(hexApothem);
 const hexSide = getSide(hexApothem);
+
+let cameralocation = new THREE.Vector2(0, 0);
+let cameraHeight = 5;
+let cameraRadius = 2;
+let cameraAngle = 0;
+
+updateCamera();
 
 console.log({ hexApothem, hexRadius });
 
@@ -272,7 +308,7 @@ scene.add(hexagon);
 
 function animate() {
   requestAnimationFrame(animate);
-  updateDebugText(camera);
+  updateDebugText(camera)
 
   renderer.render(scene, camera);
   frame++;
