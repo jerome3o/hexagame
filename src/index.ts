@@ -1,5 +1,7 @@
 import * as THREE from "three";
 
+let frame = 0;
+
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
   75,
@@ -12,9 +14,19 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const geometry = new THREE.BoxGeometry( 1, 1, 1 );
-const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-const cube = new THREE.Mesh( geometry, material );
+function makeCube() {
+    const geometry = new THREE.BoxGeometry( 2, 1, 1 );
+
+    // with wireframe
+    const material = new THREE.MeshBasicMaterial(
+        { color: 0x00ff00, wireframe: true }
+    );
+    const cube = new THREE.Mesh( geometry, material );
+    return cube;
+}
+
+const cube = makeCube();
+
 scene.add( cube );
 
 camera.position.z = 5;
@@ -30,12 +42,53 @@ window.addEventListener('resize', () => {
   renderer.setPixelRatio(window.devicePixelRatio);
 });
 
+// listen for mouse drag
+let isDragging = false;
+let previousMousePosition = {
+  x: 0,
+  y: 0
+};
+
+document.addEventListener('mousedown', event => {
+  isDragging = true;
+  previousMousePosition = {
+    x: event.offsetX,
+    y: event.offsetY
+  };
+});
+
+document.addEventListener('mouseup', event => {
+  isDragging = false;
+});
+
+document.addEventListener('mousemove', event => {
+  // only update if dragging
+  if (!isDragging) {
+    return;
+  }
+
+  // calculate delta mouse movement
+  const deltaMove = {
+    x: event.offsetX - previousMousePosition.x,
+    y: event.offsetY - previousMousePosition.y
+  };
+
+  // rotate cube
+  cube.rotation.x += deltaMove.y * 0.01;
+  cube.rotation.y += deltaMove.x * 0.01;
+
+  // update previous mouse position
+  previousMousePosition = {
+    x: event.offsetX,
+    y: event.offsetY
+  };
+});
+
 
 function animate() {
 	requestAnimationFrame( animate );
-    cube.rotation.x += 0.01;
-    cube.rotation.y += 0.01;
-	renderer.render( scene, camera );
 
+	renderer.render( scene, camera );
+    frame++;
 }
 animate();
