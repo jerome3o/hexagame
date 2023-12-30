@@ -60,11 +60,16 @@ function updateCameraInner(
   camera.up.set(0, 0, 1);
 }
 
+function rotateCamera(angle: number) {
+  cameraAngle += angle;
+}
+
 export {
   updateCameraInner,
   updateCameraPosition,
   updateCameraRotation,
   updateCameraZoom,
+  rotateCamera,
   cameraLocation,
   cameraHeight,
   cameraRadius,

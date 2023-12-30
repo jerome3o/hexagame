@@ -1,18 +1,20 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { drawHexagonGrid, drawTileGrid } from "./game/hexagons";
+import { drawTileGrid } from "./game/hexagons";
 import { setUpMouse } from "./game/mouse";
 import {
   updateCameraInner,
   updateCameraPosition,
   updateCameraRotation,
   updateCameraZoom,
+  rotateCamera,
   cameraAngle,
   cameraHeight,
   cameraRadius,
   cameraLocation,
 } from "./game/camera";
 import { EXAMPLE_GRID } from "./game/tile";
+import { setUpKeys } from "./game/keys";
 
 let frame = 0;
 
@@ -75,10 +77,26 @@ function updateCamera() {
   updateDebugText(camera);
 }
 
-// initialise
-camera.position.z = 5;
+// controls
 
+const rotationSpeed = 0.05;
+
+updateCamera();
 setUpMouse([updateCameraPosition], [updateCameraRotation], [updateCameraZoom]);
+const controlsOnGameTick = setUpKeys([
+  {
+    key: "ArrowLeft",
+    handler: () => {
+      rotateCamera(-rotationSpeed);
+    },
+  },
+  {
+    key: "ArrowRight",
+    handler: () => {
+      rotateCamera(rotationSpeed);
+    },
+  },
+]);
 
 const light = new THREE.AmbientLight(0x404040); // soft white light
 const pointLight = new THREE.PointLight(0xffffff, 50, 500);
@@ -113,6 +131,7 @@ scene.background = new THREE.Color(0xffffff);
 
 function animate() {
   requestAnimationFrame(animate);
+  controlsOnGameTick();
   updateDebugText(camera);
   updateCamera();
 

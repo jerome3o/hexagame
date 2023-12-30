@@ -56,5 +56,7 @@ EXAMPLE_GRID.addTile(new Tile(TileType.MOUNTAIN), { q: 1, r: 0 });
 EXAMPLE_GRID.addTile(new Tile(TileType.WATER), { q: 2, r: 0 });
 EXAMPLE_GRID.addTile(new Tile(TileType.PLAIN), { q: 0, r: 1 });
 EXAMPLE_GRID.addTile(new Tile(TileType.DESERT), { q: 1, r: 1 });
+EXAMPLE_GRID.addTile(new Tile(TileType.PLAIN), { q: 1, r: 4 });
+EXAMPLE_GRID.addTile(new Tile(TileType.WATER), { q: 1, r: 3 });
 
 export { Tile, TileType, TileGrid, EXAMPLE_GRID, TILE_COLOURS };
