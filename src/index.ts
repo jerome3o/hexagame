@@ -2,8 +2,9 @@ import * as THREE from "three";
 import * as CANNON from "cannon-es";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { copyBodyToMesh } from "./game/cannonHelpers";
+import { getMouseVector2, checkRayIntersections } from "./game/raycast";
 import { drawTileGrid } from "./game/hexagons";
-import { setUpMouse } from "./game/mouse";
+import { MousePosition, setUpMouse } from "./game/mouse";
 import {
   updateCameraInner,
   updateCameraPosition,
@@ -103,10 +104,29 @@ function updateCamera() {
 
 // controls
 
+function raycastMouse(position: MousePosition) {
+  // const mousePointer = new THREE.Vector2();
+  // mousePointer.x = (position.x / window.innerWidth) * 2 - 1;
+  // mousePointer.y = -(position.y / window.innerHeight) * 2 + 1;
+  const mousePointer = getMouseVector2(position, window);
+  const intersections = checkRayIntersections(
+    mousePointer,
+    camera,
+    raycaster,
+    scene
+  );
+  console.log(intersections);
+}
+
 const rotationSpeed = 0.05;
 
 updateCamera();
-setUpMouse([updateCameraPosition], [updateCameraRotation], [updateCameraZoom]);
+setUpMouse(
+  [updateCameraPosition],
+  [updateCameraRotation],
+  [updateCameraZoom],
+  [raycastMouse]
+);
 const controlsOnGameTick = setUpKeys([
   {
     key: "ArrowLeft",
@@ -178,9 +198,6 @@ function animate() {
 
   // the sphere y position shows the sphere falling
   copyBodyToMesh(sphereBody, sphere);
-  // the sphere y position shows the sphere falling
-  console.log(`Sphere y position: ${sphereBody.position.z}`);
-
   // update sphere position
   sphere.position.x = sphereBody.position.x;
 

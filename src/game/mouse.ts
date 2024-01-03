@@ -1,18 +1,15 @@
-interface MousePosition {
-  x: number;
-  y: number;
-}
+import { MousePosition } from "./commonModels";
+
+type MouseDragFunctions = ((
+  oldPosition: MousePosition,
+  newPosition: MousePosition
+) => void)[];
 
 function setUpMouse(
-  leftClickDrag: ((
-    oldPosition: MousePosition,
-    newPosition: MousePosition
-  ) => void)[],
-  rightClickDrag: ((
-    oldPosition: MousePosition,
-    newPosition: MousePosition
-  ) => void)[] = [],
-  scroll: ((scrollDelta: number) => void)[] = []
+  leftClickDrag: MouseDragFunctions = [],
+  rightClickDrag: MouseDragFunctions = [],
+  scroll: ((scrollDelta: number) => void)[] = [],
+  hover: ((position: MousePosition) => void)[] = []
 ) {
   // listen for mouse drag
   let isDraggingLeft = false;
@@ -22,6 +19,25 @@ function setUpMouse(
     x: 0,
     y: 0,
   };
+
+  function callAllSingle(
+    fns: ((position: MousePosition) => void)[],
+    event: MouseEvent
+  ) {
+    fns.forEach((f) => f({ x: event.offsetX, y: event.offsetY }));
+  }
+
+  function callAllDelta(
+    fns: ((oldPosition: MousePosition, newPosition: MousePosition) => void)[],
+    event: MouseEvent
+  ) {
+    fns.forEach((f) =>
+      f(previousMousePosition, {
+        x: event.offsetX,
+        y: event.offsetY,
+      })
+    );
+  }
 
   document.addEventListener("mousedown", (event) => {
     // check if left click
@@ -43,32 +59,25 @@ function setUpMouse(
     } else if (event.button === 2) {
       isDraggingRight = false;
     }
+
+    if (!isDraggingLeft && !isDraggingRight) {
+      callAllSingle(hover, event);
+    }
   });
 
   document.addEventListener("mousemove", (event) => {
     // only update if dragging
     if (!isDraggingLeft && !isDraggingRight) {
+      callAllSingle(hover, event);
       return;
     }
 
     if (isDraggingLeft) {
-      // call functions
-      leftClickDrag.forEach((f) =>
-        f(previousMousePosition, {
-          x: event.offsetX,
-          y: event.offsetY,
-        })
-      );
+      callAllDelta(leftClickDrag, event);
     }
 
     if (isDraggingRight) {
-      // call functions
-      rightClickDrag.forEach((f) =>
-        f(previousMousePosition, {
-          x: event.offsetX,
-          y: event.offsetY,
-        })
-      );
+      callAllDelta(rightClickDrag, event);
     }
 
     // update previous mouse position
