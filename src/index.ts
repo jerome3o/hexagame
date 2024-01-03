@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import * as CANNON from "cannon-es";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { drawTileGrid } from "./game/hexagons";
 import { setUpMouse } from "./game/mouse";
@@ -18,6 +19,7 @@ import { setUpKeys } from "./game/keys";
 
 let frame = 0;
 
+// three.js setup
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
   75,
@@ -29,6 +31,26 @@ const camera = new THREE.PerspectiveCamera(
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
+
+// cannon.js setup
+const world = new CANNON.World({
+  gravity: new CANNON.Vec3(0, 0, -0.1),
+});
+const radius = 1;
+const sphereBody = new CANNON.Body({
+  mass: 5,
+  position: new CANNON.Vec3(0, 0, 3),
+  shape: new CANNON.Sphere(radius),
+});
+world.addBody(sphereBody);
+
+const groundBody = new CANNON.Body({
+  type: CANNON.Body.STATIC,
+  shape: new CANNON.Plane(),
+});
+// make it face up
+groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), 0);
+// world.addBody(groundBody);
 
 // listen for window resize
 window.addEventListener("resize", () => {
@@ -123,6 +145,24 @@ loader.load(
 // const hexagonGrid = drawHexagonGrid(15, 15, 1);
 const hexagonGrid = drawTileGrid(EXAMPLE_GRID, 1);
 
+// add sphere
+const geometry = new THREE.SphereGeometry(radius, 32, 32);
+const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+const sphere = new THREE.Mesh(geometry, material);
+
+// add plane
+const planeGeometry = new THREE.PlaneGeometry(3, 3, 3);
+// beige
+const planeMaterial = new THREE.MeshBasicMaterial({ color: 0xf5f5dc });
+const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+
+// Update plane from ground body
+plane.position.copy(groundBody.position);
+plane.quaternion.copy(groundBody.quaternion);
+
+scene.add(sphere);
+scene.add(plane);
+
 scene.add(hexagonGrid);
 scene.add(light);
 scene.add(pointLight);
@@ -131,7 +171,19 @@ scene.background = new THREE.Color(0xffffff);
 
 function animate() {
   requestAnimationFrame(animate);
+
   controlsOnGameTick();
+  world.fixedStep();
+
+  // the sphere y position shows the sphere falling
+  sphere.position.copy(sphereBody.position);
+  sphere.quaternion.copy(sphereBody.quaternion);
+  // the sphere y position shows the sphere falling
+  console.log(`Sphere y position: ${sphereBody.position.z}`);
+
+  // update sphere position
+  sphere.position.x = sphereBody.position.x;
+
   updateDebugText(camera);
   updateCamera();
 
