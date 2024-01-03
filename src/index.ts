@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import * as CANNON from "cannon-es";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { copyBodyToMesh } from "./game/cannonHelpers";
 import { drawTileGrid } from "./game/hexagons";
 import { setUpMouse } from "./game/mouse";
 import {
@@ -158,8 +159,7 @@ const planeMaterial = new THREE.MeshBasicMaterial({ color: 0xf5f5dc });
 const plane = new THREE.Mesh(planeGeometry, planeMaterial);
 
 // Update plane from ground body
-plane.position.copy(groundBody.position);
-plane.quaternion.copy(groundBody.quaternion);
+copyBodyToMesh(groundBody, plane);
 
 scene.add(sphere);
 scene.add(plane);
@@ -177,8 +177,7 @@ function animate() {
   world.fixedStep();
 
   // the sphere y position shows the sphere falling
-  sphere.position.copy(sphereBody.position);
-  sphere.quaternion.copy(sphereBody.quaternion);
+  copyBodyToMesh(sphereBody, sphere);
   // the sphere y position shows the sphere falling
   console.log(`Sphere y position: ${sphereBody.position.z}`);
 
