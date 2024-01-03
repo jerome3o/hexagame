@@ -18,6 +18,7 @@ import {
 } from "./game/camera";
 import { EXAMPLE_GRID } from "./game/tile";
 import { setUpKeys } from "./game/keys";
+import { TileGrid } from "./game/tile";
 
 let frame = 0;
 
@@ -104,7 +105,7 @@ function updateCamera() {
 
 // controls
 
-function raycastMouse(position: MousePosition) {
+function raycastMouse(position: MousePosition, tileGrid: TileGrid) {
   // const mousePointer = new THREE.Vector2();
   // mousePointer.x = (position.x / window.innerWidth) * 2 - 1;
   // mousePointer.y = -(position.y / window.innerHeight) * 2 + 1;
@@ -115,7 +116,16 @@ function raycastMouse(position: MousePosition) {
     raycaster,
     scene
   );
-  console.log(intersections);
+  // todo check on the tiles
+  const tilesByUuid = tileGrid.getRenderedTileUuidMap();
+
+  intersections.forEach((intersection) => {
+    const uuid = intersection.object.uuid;
+    const tile = tilesByUuid.get(uuid);
+    if (tile) {
+      tile.mesh.material.color.set(0xff0000);
+    }
+  });
 }
 
 const rotationSpeed = 0.05;
@@ -125,7 +135,7 @@ setUpMouse(
   [updateCameraPosition],
   [updateCameraRotation],
   [updateCameraZoom],
-  [raycastMouse]
+  [(position: MousePosition) => raycastMouse(position, EXAMPLE_GRID)]
 );
 const controlsOnGameTick = setUpKeys([
   {

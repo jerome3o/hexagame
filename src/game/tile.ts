@@ -32,20 +32,52 @@ class Tile {
   }
 }
 
+class RenderedTile {
+  public tile: Tile;
+  public mesh: THREE.Mesh;
+
+  constructor(tile: Tile, mesh: THREE.Mesh) {
+    this.tile = tile;
+    this.mesh = mesh;
+  }
+}
+
 class TileGrid {
   // map of TileCoordinate to TileSlot
   private tiles: Map<TileCoordinate, Tile> = new Map();
+  private renderedTiles: Map<TileCoordinate, RenderedTile> = new Map();
+  private renderedTileByMeshUuid: Map<string, RenderedTile> = new Map();
 
   constructor() {}
+
+  private updateRenderedTileByMeshUuid() {
+    this.renderedTileByMeshUuid = new Map();
+    this.renderedTiles.forEach((renderedTile) => {
+      this.renderedTileByMeshUuid.set(renderedTile.mesh.uuid, renderedTile);
+    });
+  }
+
+  getRenderedTileUuidMap() {
+    return this.renderedTileByMeshUuid;
+  }
 
   // add a tile to the grid
   addTile(tile: Tile, coordinate: TileCoordinate) {
     this.tiles.set(coordinate, tile);
   }
 
+  addRenderedTile(renderedTile: RenderedTile, coordinate: TileCoordinate) {
+    this.renderedTiles.set(coordinate, renderedTile);
+    this.updateRenderedTileByMeshUuid();
+  }
+
   // get all tiles
   getTiles() {
     return this.tiles;
+  }
+
+  getRenderedTiles() {
+    return this.renderedTiles;
   }
 }
 
@@ -59,4 +91,4 @@ EXAMPLE_GRID.addTile(new Tile(TileType.DESERT), { q: 1, r: 1 });
 EXAMPLE_GRID.addTile(new Tile(TileType.PLAIN), { q: 1, r: 4 });
 EXAMPLE_GRID.addTile(new Tile(TileType.WATER), { q: 1, r: 3 });
 
-export { Tile, TileType, TileGrid, EXAMPLE_GRID, TILE_COLOURS };
+export { RenderedTile, Tile, TileType, TileGrid, EXAMPLE_GRID, TILE_COLOURS };

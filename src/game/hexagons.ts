@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { TileGrid, Tile, TILE_COLOURS } from "./tile";
+import { RenderedTile, TileGrid, Tile, TILE_COLOURS } from "./tile";
 
 interface Point {
   x: number;
@@ -104,7 +104,9 @@ function drawTileGrid(tileGrid: TileGrid, radius: number = 1) {
   tileGrid.getTiles().forEach((tile, coordinate) => {
     const point = hexPointToXy(coordinate, radius);
     const hex = drawTile(tile, point, radius);
+
     hexagon.add(hex);
+    tileGrid.addRenderedTile(new RenderedTile(tile, hex), coordinate);
   });
   return hexagon;
 }
