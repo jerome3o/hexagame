@@ -119,13 +119,15 @@ function raycastMouse(position: MousePosition, tileGrid: TileGrid) {
   // todo check on the tiles
   const tilesByUuid = tileGrid.getRenderedTileUuidMap();
 
-  intersections.forEach((intersection) => {
-    const uuid = intersection.object.uuid;
-    const tile = tilesByUuid.get(uuid);
-    if (tile) {
-      tile.mesh.material.color.set(0xff0000);
-    }
-  });
+  // unhover all tiles
+  tileGrid.unhoverAll();
+
+  // hover over the intersected tiles
+  if (intersections.length > 0) {
+    // hover over first
+    const uuid = intersections[0].object.uuid;
+    tileGrid.hoverOver(uuid);
+  }
 }
 
 const rotationSpeed = 0.05;

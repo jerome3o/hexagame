@@ -40,6 +40,14 @@ class RenderedTile {
     this.tile = tile;
     this.mesh = mesh;
   }
+
+  hover() {
+    this.mesh.material.color.set(0xff0000);
+  }
+
+  unhover() {
+    this.mesh.material.color.set(TILE_COLOURS[this.tile.type]);
+  }
 }
 
 class TileGrid {
@@ -47,6 +55,9 @@ class TileGrid {
   private tiles: Map<TileCoordinate, Tile> = new Map();
   private renderedTiles: Map<TileCoordinate, RenderedTile> = new Map();
   private renderedTileByMeshUuid: Map<string, RenderedTile> = new Map();
+
+  // set
+  private hoveredTiles: Set<RenderedTile> = new Set();
 
   constructor() {}
 
@@ -78,6 +89,21 @@ class TileGrid {
 
   getRenderedTiles() {
     return this.renderedTiles;
+  }
+
+  unhoverAll() {
+    this.hoveredTiles.forEach((renderedTile) => {
+      renderedTile.unhover();
+    });
+    this.hoveredTiles.clear();
+  }
+
+  hoverOver(uuid: string) {
+    const renderedTile = this.renderedTileByMeshUuid.get(uuid);
+    if (renderedTile) {
+      renderedTile.hover();
+      this.hoveredTiles.add(renderedTile);
+    }
   }
 }
 
