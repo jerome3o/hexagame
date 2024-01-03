@@ -20,6 +20,7 @@ import { setUpKeys } from "./game/keys";
 let frame = 0;
 
 // three.js setup
+const raycaster = new THREE.Raycaster();
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
   75,
