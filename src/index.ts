@@ -76,7 +76,11 @@ function getDebugInfoString(camera: THREE.PerspectiveCamera) {
   //   position: camera.position,
   //   rotation: camera.rotation,
   // };
-  return `fov: ${camera.fov}
+  return `
+mouse-1 drag to translate
+mouse-2 drag to rotate (or arrow keys)
+scroll to zoom
+fov: ${camera.fov}
 aspect: ${camera.aspect}
 near: ${camera.near}
 far: ${camera.far}
