@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import * as THREE from "three"
 
 // enum of tile types
 enum TileType {
@@ -7,6 +7,7 @@ enum TileType {
   WATER,
   PLAIN,
   DESERT,
+  NONE,
 }
 
 // tile colours
@@ -16,105 +17,116 @@ const TILE_COLOURS = {
   [TileType.WATER]: 0x0000ff,
   [TileType.PLAIN]: 0x00ffff,
   [TileType.DESERT]: 0xffff00,
-};
+  [TileType.NONE]: 0xffffff,
+}
 
 interface TileCoordinate {
-  q: number;
-  r: number;
+  q: number
+  r: number
   // s: number;
 }
 
 class Tile {
-  public type: TileType;
+  public type: TileType
 
   constructor(type: TileType) {
-    this.type = type;
+    this.type = type
   }
 }
 
 class RenderedTile {
-  public tile: Tile;
-  public mesh: THREE.Mesh;
+  public tile: Tile
+  public mesh: THREE.Mesh
 
   constructor(tile: Tile, mesh: THREE.Mesh) {
-    this.tile = tile;
-    this.mesh = mesh;
+    this.tile = tile
+    this.mesh = mesh
   }
 
   hover() {
-    this.mesh.material.color.set(0xff0000);
+    this.mesh.material.color.set(0xff0000)
   }
 
   unhover() {
-    this.mesh.material.color.set(TILE_COLOURS[this.tile.type]);
+    this.mesh.material.color.set(TILE_COLOURS[this.tile.type])
   }
 }
 
 class TileGrid {
-  // map of TileCoordinate to TileSlot
-  private tiles: Map<TileCoordinate, Tile> = new Map();
+  // tiles by q,r coordinate
+  private tiles: Tile[][]
   private renderedTiles: Map<TileCoordinate, RenderedTile> = new Map();
   private renderedTileByMeshUuid: Map<string, RenderedTile> = new Map();
+  size: number
 
   // set
   private hoveredTiles: Set<RenderedTile> = new Set();
 
-  constructor() {}
+  constructor(size = 10) {
+    this.size = size
+    this.tiles = [...Array(size)].map(() => {
+      return Array(size).fill(null)
+    })
+    for (let q = 0; q < size; q++) {
+      for (let r = 0; r < size; r++) {
+        const tile = new Tile(TileType.NONE)
+        this.tiles[q][r] = tile
+      }
+    }
+  }
 
   private updateRenderedTileByMeshUuid() {
-    this.renderedTileByMeshUuid = new Map();
+    this.renderedTileByMeshUuid = new Map()
     this.renderedTiles.forEach((renderedTile) => {
-      this.renderedTileByMeshUuid.set(renderedTile.mesh.uuid, renderedTile);
-    });
+      this.renderedTileByMeshUuid.set(renderedTile.mesh.uuid, renderedTile)
+    })
   }
 
   getRenderedTileUuidMap() {
-    return this.renderedTileByMeshUuid;
-  }
-
-  // add a tile to the grid
-  addTile(tile: Tile, coordinate: TileCoordinate) {
-    this.tiles.set(coordinate, tile);
+    return this.renderedTileByMeshUuid
   }
 
   addRenderedTile(renderedTile: RenderedTile, coordinate: TileCoordinate) {
-    this.renderedTiles.set(coordinate, renderedTile);
-    this.updateRenderedTileByMeshUuid();
+    this.renderedTiles.set(coordinate, renderedTile)
+    this.updateRenderedTileByMeshUuid()
   }
 
-  // get all tiles
   getTiles() {
-    return this.tiles;
+    return this.tiles
+  }
+
+  getTile(q: number, r: number) {
+    return this.tiles[q][r]
   }
 
   getRenderedTiles() {
-    return this.renderedTiles;
+    return this.renderedTiles
   }
 
   unhoverAll() {
     this.hoveredTiles.forEach((renderedTile) => {
-      renderedTile.unhover();
-    });
-    this.hoveredTiles.clear();
+      renderedTile.unhover()
+    })
+    this.hoveredTiles.clear()
   }
 
   hoverOver(uuid: string) {
-    const renderedTile = this.renderedTileByMeshUuid.get(uuid);
+    const renderedTile = this.renderedTileByMeshUuid.get(uuid)
     if (renderedTile) {
-      renderedTile.hover();
-      this.hoveredTiles.add(renderedTile);
+      renderedTile.hover()
+      this.hoveredTiles.add(renderedTile)
     }
   }
 }
 
-const EXAMPLE_GRID = new TileGrid();
+const EXAMPLE_GRID = new TileGrid(10)
 
-EXAMPLE_GRID.addTile(new Tile(TileType.FOREST), { q: 0, r: 0 });
-EXAMPLE_GRID.addTile(new Tile(TileType.MOUNTAIN), { q: 1, r: 0 });
-EXAMPLE_GRID.addTile(new Tile(TileType.WATER), { q: 2, r: 0 });
-EXAMPLE_GRID.addTile(new Tile(TileType.PLAIN), { q: 0, r: 1 });
-EXAMPLE_GRID.addTile(new Tile(TileType.DESERT), { q: 1, r: 1 });
-EXAMPLE_GRID.addTile(new Tile(TileType.PLAIN), { q: 1, r: 4 });
-EXAMPLE_GRID.addTile(new Tile(TileType.WATER), { q: 1, r: 3 });
+EXAMPLE_GRID.getTile(0, 0)!.type = TileType.FOREST
+EXAMPLE_GRID.getTile(1, 0)!.type = TileType.MOUNTAIN
+EXAMPLE_GRID.getTile(2, 0)!.type = TileType.WATER
+EXAMPLE_GRID.getTile(0, 1)!.type = TileType.PLAIN
+EXAMPLE_GRID.getTile(1, 1)!.type = TileType.DESERT
+EXAMPLE_GRID.getTile(1, 4)!.type = TileType.PLAIN
+EXAMPLE_GRID.getTile(1, 3)!.type = TileType.WATER
 
-export { RenderedTile, Tile, TileType, TileGrid, EXAMPLE_GRID, TILE_COLOURS };
+export { RenderedTile, Tile, TileType, TileGrid, EXAMPLE_GRID, TILE_COLOURS }
