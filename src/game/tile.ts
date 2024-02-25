@@ -117,6 +117,15 @@ class TileGrid {
       this.hoveredTiles.add(renderedTile)
     }
   }
+
+  onClick() {
+    this.hoveredTiles.forEach(({ tile }) => tile.type = TileType.FOREST)
+    for (const row of this.tiles) {
+      for (const tile of row) {
+        console.log(tile.type)
+      }
+    }
+  }
 }
 
 const EXAMPLE_GRID = new TileGrid(10)
