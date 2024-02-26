@@ -1,15 +1,16 @@
 body {
-    margin: 0;
+	margin: 0;
 }
 
 #info {
+	display: block;
 	position: absolute;
-	top: 10px;
-	width: 100%;
-	text-align: center;
+	top: 2rem;
+	width: 20rem;
+	left: calc(50% - 10rem);
 	z-index: 100;
-	display:block;
-
-    /* text colour white */
-    color: black;
+	pointer-events: none;
+	color: black;
+	padding: 0.5rem;
+	background: rgba(255, 255, 255, 0.3);
 }

@@ -79,6 +79,8 @@ function getDebugInfoString(camera: THREE.PerspectiveCamera) {
   //   position: camera.position,
   //   rotation: camera.rotation,
   // };
+  const positionFixed = camera.position.toArray().map((val) => val.toFixed(2))
+  const rotationFixed = camera.rotation.toArray().filter(val => Number.isFinite(val)).map((val: number) => val.toFixed(2))
   return `
 mouse-1 drag to translate
 mouse-2 drag to rotate (or arrow keys)
@@ -87,8 +89,8 @@ fov: ${camera.fov}
 aspect: ${camera.aspect}
 near: ${camera.near}
 far: ${camera.far}
-position: ${camera.position.x}, ${camera.position.y}, ${camera.position.z}
-rotation: ${camera.rotation.x}, ${camera.rotation.y}, ${camera.rotation.z}
+position: ${positionFixed.join(', ')}
+rotation: ${rotationFixed.join(', ')}
 gameRotation: ${cameraAngle}`
 }
 
@@ -131,7 +133,9 @@ function raycastMouse(position: MousePosition, tileGrid: TileGrid) {
   if (intersections.length > 0) {
     // hover over first
     const uuid = intersections[0].object.uuid
-    tileGrid.hoverOver(uuid)
+    if (tileGrid.hashMesh(uuid)) {
+      tileGrid.hoverOver(uuid)
+    }
   }
 }
 

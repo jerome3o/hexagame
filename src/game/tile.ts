@@ -132,6 +132,10 @@ class TileGrid {
     return this.getRenderedTileByCoordinate(coordinate)
   }
 
+  hashMesh(uuid: string) {
+    return this.coordinateByMeshId.has(uuid)
+  }
+
   hoverOver(uuid: string) {
     const coordinate = this.getCoordinateByMeshId(uuid)
     const renderedTile = this.getRenderedTileByCoordinate(coordinate)
