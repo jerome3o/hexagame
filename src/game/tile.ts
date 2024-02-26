@@ -54,13 +54,13 @@ class RenderedTile {
 
 class TileGrid {
   // tiles by q,r coordinate
-  private tiles: Tile[][]
-  private renderedTiles: Map<TileCoordinate, RenderedTile> = new Map();
-  private renderedTileByMeshUuid: Map<string, RenderedTile> = new Map();
+  private readonly tiles: Tile[][]
+  private readonly renderedTiles: Map<TileCoordinate, RenderedTile> = new Map();
+  private readonly coordinateByMeshId: Map<string, TileCoordinate> = new Map();
   size: number
 
   // set
-  private hoveredTiles: Set<RenderedTile> = new Set();
+  private hoveredTiles: Set<TileCoordinate> = new Set();
 
   constructor(size = 10) {
     this.size = size
@@ -75,54 +75,99 @@ class TileGrid {
     }
   }
 
-  private updateRenderedTileByMeshUuid() {
-    this.renderedTileByMeshUuid = new Map()
-    this.renderedTiles.forEach((renderedTile) => {
-      this.renderedTileByMeshUuid.set(renderedTile.mesh.uuid, renderedTile)
-    })
-  }
-
-  getRenderedTileUuidMap() {
-    return this.renderedTileByMeshUuid
-  }
-
   addRenderedTile(renderedTile: RenderedTile, coordinate: TileCoordinate) {
     this.renderedTiles.set(coordinate, renderedTile)
-    this.updateRenderedTileByMeshUuid()
+    this.coordinateByMeshId.set(renderedTile.mesh.uuid, coordinate)
   }
 
-  getTiles() {
-    return this.tiles
+  getTile(coordinate: TileCoordinate) {
+    return this.tiles[coordinate.q][coordinate.r]
   }
 
-  getTile(q: number, r: number) {
-    return this.tiles[q][r]
+  getAdjacent({ q, r }: TileCoordinate) {
+    const adjacent = []
+    const directions = [
+      [1, 0],
+      [1, -1],
+      [0, -1],
+      [-1, 0],
+      [-1, 1],
+      [0, 1],
+    ]
+    for (const [dq, dr] of directions) {
+      const neighbour = { q: q + dq, r: r + dr }
+      if (neighbour.q < 0 || neighbour.r < 0 || neighbour.q >= this.size || neighbour.r >= this.size) {
+        continue
+      }
+      adjacent.push(this.getTile(neighbour))
+    }
+    return adjacent
   }
 
-  getRenderedTiles() {
-    return this.renderedTiles
+  getRenderedTileByCoordinate(coordinate: TileCoordinate) {
+    const renderedTile = this.renderedTiles.get(coordinate)
+    if (!renderedTile) {
+      throw new Error(`No renderedTile found at coordinate (${coordinate.q}, ${coordinate.r}) `)
+    }
+    return renderedTile
   }
 
   unhoverAll() {
-    this.hoveredTiles.forEach((renderedTile) => {
-      renderedTile.unhover()
+    this.hoveredTiles.forEach((coordinate) => {
+      this.renderedTiles.get(coordinate)!.unhover()
     })
     this.hoveredTiles.clear()
   }
 
-  hoverOver(uuid: string) {
-    const renderedTile = this.renderedTileByMeshUuid.get(uuid)
-    if (renderedTile) {
-      renderedTile.hover()
-      this.hoveredTiles.add(renderedTile)
+  getCoordinateByMeshId(uuid: string) {
+    const coordinate = this.coordinateByMeshId.get(uuid)
+    if (!coordinate) {
+      throw new Error(`No coordinate found for mesh with uuid ${uuid}`)
     }
+    return coordinate
+  }
+
+  getRenderedTileByMeshId(uuid: string) {
+    const coordinate = this.getCoordinateByMeshId(uuid)
+    return this.getRenderedTileByCoordinate(coordinate)
+  }
+
+  hoverOver(uuid: string) {
+    const coordinate = this.getCoordinateByMeshId(uuid)
+    const renderedTile = this.getRenderedTileByCoordinate(coordinate)
+    renderedTile.hover()
+    this.hoveredTiles.add(coordinate)
   }
 
   onClick() {
-    this.hoveredTiles.forEach(({ tile }) => tile.type = TileType.FOREST)
-    for (const row of this.tiles) {
-      for (const tile of row) {
-        console.log(tile.type)
+
+    for (const coordinate of this.hoveredTiles) {
+      const adjacent = this.getAdjacent(coordinate)
+
+      if (adjacent.every((tile) => tile.type === TileType.NONE)) {
+        continue
+      }
+
+      const tile = this.getTile(coordinate)
+
+      switch (tile.type) {
+        case TileType.FOREST:
+          tile.type = TileType.MOUNTAIN
+          break
+        case TileType.MOUNTAIN:
+          tile.type = TileType.WATER
+          break
+        case TileType.WATER:
+          tile.type = TileType.PLAIN
+          break
+        case TileType.PLAIN:
+          tile.type = TileType.DESERT
+          break
+        case TileType.DESERT:
+          tile.type = TileType.FOREST
+          break
+        default:
+          tile.type = TileType.FOREST
       }
     }
   }
@@ -130,12 +175,12 @@ class TileGrid {
 
 const EXAMPLE_GRID = new TileGrid(10)
 
-EXAMPLE_GRID.getTile(0, 0)!.type = TileType.FOREST
-EXAMPLE_GRID.getTile(1, 0)!.type = TileType.MOUNTAIN
-EXAMPLE_GRID.getTile(2, 0)!.type = TileType.WATER
-EXAMPLE_GRID.getTile(0, 1)!.type = TileType.PLAIN
-EXAMPLE_GRID.getTile(1, 1)!.type = TileType.DESERT
-EXAMPLE_GRID.getTile(1, 4)!.type = TileType.PLAIN
-EXAMPLE_GRID.getTile(1, 3)!.type = TileType.WATER
+EXAMPLE_GRID.getTile({ q: 0, r: 0 }).type = TileType.FOREST
+EXAMPLE_GRID.getTile({ q: 1, r: 0 }).type = TileType.MOUNTAIN
+EXAMPLE_GRID.getTile({ q: 2, r: 0 }).type = TileType.WATER
+EXAMPLE_GRID.getTile({ q: 0, r: 1 }).type = TileType.PLAIN
+EXAMPLE_GRID.getTile({ q: 1, r: 1 }).type = TileType.DESERT
+EXAMPLE_GRID.getTile({ q: 1, r: 4 }).type = TileType.PLAIN
+EXAMPLE_GRID.getTile({ q: 1, r: 3 }).type = TileType.WATER
 
 export { RenderedTile, Tile, TileType, TileGrid, EXAMPLE_GRID, TILE_COLOURS }

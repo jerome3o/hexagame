@@ -123,8 +123,6 @@ function raycastMouse(position: MousePosition, tileGrid: TileGrid) {
     raycaster,
     scene
   )
-  // todo check on the tiles
-  const tilesByUuid = tileGrid.getRenderedTileUuidMap()
 
   // unhover all tiles
   tileGrid.unhoverAll()

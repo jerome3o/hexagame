@@ -103,8 +103,8 @@ function drawTileGrid(tileGrid: TileGrid, radius: number = 1) {
   const hexagon = new THREE.Group()
   for (let q = 0; q < tileGrid.size; q++) {
     for (let r = 0; r < tileGrid.size; r++) {
-      const tile = tileGrid.getTile(q, r)
       const coordinate = { q, r }
+      const tile = tileGrid.getTile(coordinate)
       const point = hexPointToXy(coordinate, radius)
       const hex = drawTile(tile, point, radius)
       hexagon.add(hex)
