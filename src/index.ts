@@ -1,10 +1,10 @@
-import * as THREE from "three"
-import * as CANNON from "cannon-es"
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js"
-import { copyBodyToMesh } from "./game/cannonHelpers"
-import { getMouseVector2, checkRayIntersections } from "./game/raycast"
-import { drawTileGrid } from "./game/hexagons"
-import { MousePosition, setUpMouse } from "./game/mouse"
+import * as THREE from "three";
+import * as CANNON from "cannon-es";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { copyBodyToMesh } from "./game/cannonHelpers";
+import { getMouseVector2, checkRayIntersections } from "./game/raycast";
+import { drawTileGrid } from "./game/hexagons";
+import { MousePosition, setUpMouse } from "./game/mouse";
 import {
   updateCameraInner,
   updateCameraPosition,
@@ -15,60 +15,60 @@ import {
   cameraHeight,
   cameraRadius,
   cameraLocation,
-} from "./game/camera"
-import { EXAMPLE_GRID } from "./game/tile"
-import { setUpKeys } from "./game/keys"
-import { TileGrid } from "./game/tile"
+} from "./game/camera";
+import { EXAMPLE_GRID } from "./game/tile";
+import { setUpKeys } from "./game/keys";
+import { TileGrid } from "./game/tile";
 
-let frame = 0
+let frame = 0;
 
 // three.js setup
-const raycaster = new THREE.Raycaster()
-const scene = new THREE.Scene()
+const raycaster = new THREE.Raycaster();
+const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
   0.1,
   1000
-)
+);
 
-const renderer = new THREE.WebGLRenderer()
-renderer.setSize(window.innerWidth, window.innerHeight)
-document.body.appendChild(renderer.domElement)
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
 renderer.domElement.onclick = () => {
-  EXAMPLE_GRID.onClick()
-}
+  EXAMPLE_GRID.onClick();
+};
 
 // cannon.js setup
 const world = new CANNON.World({
   gravity: new CANNON.Vec3(0, 0, -0.1),
-})
-const radius = 1
+});
+const radius = 1;
 const sphereBody = new CANNON.Body({
   mass: 5,
   position: new CANNON.Vec3(0, 0, 3),
   shape: new CANNON.Sphere(radius),
-})
-world.addBody(sphereBody)
+});
+world.addBody(sphereBody);
 
 const groundBody = new CANNON.Body({
   type: CANNON.Body.STATIC,
   shape: new CANNON.Plane(),
-})
+});
 // make it face up
-groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), 0)
+groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), 0);
 // world.addBody(groundBody);
 
 // listen for window resize
 window.addEventListener("resize", () => {
   // update camera
-  camera.aspect = window.innerWidth / window.innerHeight
-  camera.updateProjectionMatrix()
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
 
   // update renderer
-  renderer.setSize(window.innerWidth, window.innerHeight)
-  renderer.setPixelRatio(window.devicePixelRatio)
-})
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(window.devicePixelRatio);
+});
 
 function getDebugInfoString(camera: THREE.PerspectiveCamera) {
   // return {
@@ -79,8 +79,11 @@ function getDebugInfoString(camera: THREE.PerspectiveCamera) {
   //   position: camera.position,
   //   rotation: camera.rotation,
   // };
-  const positionFixed = camera.position.toArray().map((val) => val.toFixed(2))
-  const rotationFixed = camera.rotation.toArray().filter(val => Number.isFinite(val)).map((val: number) => val.toFixed(2))
+  const positionFixed = camera.position.toArray().map((val) => val.toFixed(2));
+  const rotationFixed = camera.rotation
+    .toArray()
+    .filter((val) => Number.isFinite(val))
+    .map((val: number) => val.toFixed(2));
   return `
 mouse-1 drag to translate
 mouse-2 drag to rotate (or arrow keys)
@@ -89,15 +92,15 @@ fov: ${camera.fov}
 aspect: ${camera.aspect}
 near: ${camera.near}
 far: ${camera.far}
-position: ${positionFixed.join(', ')}
-rotation: ${rotationFixed.join(', ')}
-gameRotation: ${cameraAngle}`
+position: ${positionFixed.join(", ")}
+rotation: ${rotationFixed.join(", ")}
+gameRotation: ${cameraAngle}`;
 }
 
 function updateDebugText(camera: THREE.PerspectiveCamera) {
-  const debugText = document.getElementById("info")
+  const debugText = document.getElementById("info");
   if (debugText) {
-    debugText.innerText = getDebugInfoString(camera)
+    debugText.innerText = getDebugInfoString(camera);
   }
 }
 
@@ -108,8 +111,8 @@ function updateCamera() {
     cameraRadius,
     cameraAngle,
     camera
-  )
-  updateDebugText(camera)
+  );
+  updateDebugText(camera);
 }
 
 // controls
@@ -118,114 +121,145 @@ function raycastMouse(position: MousePosition, tileGrid: TileGrid) {
   // const mousePointer = new THREE.Vector2();
   // mousePointer.x = (position.x / window.innerWidth) * 2 - 1;
   // mousePointer.y = -(position.y / window.innerHeight) * 2 + 1;
-  const mousePointer = getMouseVector2(position, window)
+  const mousePointer = getMouseVector2(position, window);
   const intersections = checkRayIntersections(
     mousePointer,
     camera,
     raycaster,
     scene
-  )
+  );
 
   // unhover all tiles
-  tileGrid.unhoverAll()
+  tileGrid.unhoverAll();
 
   // hover over the intersected tiles
   if (intersections.length > 0) {
     // hover over first
-    const uuid = intersections[0].object.uuid
+    const uuid = intersections[0].object.uuid;
     if (tileGrid.hashMesh(uuid)) {
-      tileGrid.hoverOver(uuid)
+      tileGrid.hoverOver(uuid);
     }
   }
 }
 
-const rotationSpeed = 0.05
+const rotationSpeed = 0.05;
 
-updateCamera()
+updateCamera();
 setUpMouse(
   [updateCameraPosition],
   [updateCameraRotation],
   [updateCameraZoom],
   [(position: MousePosition) => raycastMouse(position, EXAMPLE_GRID)]
-)
+);
+
+const light = new THREE.AmbientLight(0x404040); // soft white light
+const pointLight = new THREE.PointLight(0xffffff, 50, 500);
+pointLight.position.set(0, 0, 10);
+
+const loader = new GLTFLoader();
+loader.load(
+  "/avocado/Avocado.gltf",
+  (gltf: any) => {
+    // scale up by 100
+    gltf.scene.scale.set(10, 10, 10);
+    gltf.scene.position.set(0, 0, 1);
+    scene.add(gltf.scene);
+  },
+  // called while loading is progressing
+  function (xhr: any) {
+    console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+  },
+  (error: any) => {
+    console.log(error);
+  }
+);
+
+// const hexagonGrid = drawHexagonGrid(15, 15, 1);
+const hexagonGrid = drawTileGrid(EXAMPLE_GRID, 1);
+
+// add sphere
+const geometry = new THREE.SphereGeometry(radius, 32, 32);
+const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+const sphere = new THREE.Mesh(geometry, material);
+
+// add plane
+const planeGeometry = new THREE.PlaneGeometry(3, 3, 3);
+// beige
+const planeMaterial = new THREE.MeshBasicMaterial({ color: 0xf5f5dc });
+const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+
+// Update plane from ground body
+copyBodyToMesh(groundBody, plane);
+
+scene.add(sphere);
+scene.add(plane);
+
+scene.add(hexagonGrid);
+scene.add(light);
+scene.add(pointLight);
+
+scene.background = new THREE.Color(0xffffff);
+
 const controlsOnGameTick = setUpKeys([
   {
     key: "ArrowLeft",
     handler: () => {
-      rotateCamera(-rotationSpeed)
+      rotateCamera(-rotationSpeed);
     },
   },
   {
     key: "ArrowRight",
     handler: () => {
-      rotateCamera(rotationSpeed)
+      rotateCamera(rotationSpeed);
     },
   },
-])
-
-const light = new THREE.AmbientLight(0x404040) // soft white light
-const pointLight = new THREE.PointLight(0xffffff, 50, 500)
-pointLight.position.set(0, 0, 10)
-
-const loader = new GLTFLoader()
-loader.load(
-  "/avocado/Avocado.gltf",
-  (gltf: any) => {
-    // scale up by 100
-    gltf.scene.scale.set(10, 10, 10)
-    gltf.scene.position.set(0, 0, 1)
-    scene.add(gltf.scene)
+  {
+    key: "w",
+    handler: () => {
+      sphereBody.position.x -= 0.1;
+    },
   },
-  // called while loading is progressing
-  function (xhr: any) {
-    console.log((xhr.loaded / xhr.total) * 100 + "% loaded")
+  {
+    key: "s",
+    handler: () => {
+      sphereBody.position.x += 0.1;
+    },
   },
-  (error: any) => {
-    console.log(error)
-  }
-)
-
-// const hexagonGrid = drawHexagonGrid(15, 15, 1);
-const hexagonGrid = drawTileGrid(EXAMPLE_GRID, 1)
-
-// add sphere
-const geometry = new THREE.SphereGeometry(radius, 32, 32)
-const material = new THREE.MeshBasicMaterial({ color: 0xffff00 })
-const sphere = new THREE.Mesh(geometry, material)
-
-// add plane
-const planeGeometry = new THREE.PlaneGeometry(3, 3, 3)
-// beige
-const planeMaterial = new THREE.MeshBasicMaterial({ color: 0xf5f5dc })
-const plane = new THREE.Mesh(planeGeometry, planeMaterial)
-
-// Update plane from ground body
-copyBodyToMesh(groundBody, plane)
-
-scene.add(sphere)
-scene.add(plane)
-
-scene.add(hexagonGrid)
-scene.add(light)
-scene.add(pointLight)
-
-scene.background = new THREE.Color(0xffffff)
+  {
+    key: "a",
+    handler: () => {
+      sphereBody.position.y += 0.1;
+    },
+  },
+  {
+    key: "d",
+    handler: () => {
+      sphereBody.position.y -= 0.1;
+    },
+  },
+  {
+    key: " ",
+    handler: () => {
+      sphereBody.position.z += 0.1;
+    },
+  },
+]);
 
 function animate() {
-  requestAnimationFrame(animate)
+  requestAnimationFrame(animate);
 
-  controlsOnGameTick()
-  world.fixedStep()
+  controlsOnGameTick();
+  world.fixedStep();
 
   // the sphere y position shows the sphere falling
-  copyBodyToMesh(sphereBody, sphere)
+  copyBodyToMesh(sphereBody, sphere);
   // update sphere position
-  sphere.position.x = sphereBody.position.x
+  sphere.position.x = sphereBody.position.x;
 
-  updateDebugText(camera)
-  updateCamera()
+  updateDebugText(camera);
+  updateCamera();
 
-  renderer.render(scene, camera)
-  frame++
+  renderer.render(scene, camera);
+  frame++;
 }
-animate()
+animate();
