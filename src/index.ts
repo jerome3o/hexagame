@@ -19,6 +19,7 @@ import {
 import { EXAMPLE_GRID } from "./game/tile"
 import { setUpKeys } from "./game/keys"
 import { TileGrid } from "./game/tile"
+import * as RpgPlayer from "./game/rpgPlayer"
 
 let frame = 0
 
@@ -58,6 +59,8 @@ const groundBody = new CANNON.Body({
 // make it face up
 groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), 0)
 // world.addBody(groundBody);
+
+const rpgPlayer = RpgPlayer.create()
 
 // listen for window resize
 window.addEventListener("resize", () => {
@@ -161,13 +164,49 @@ const controlsOnGameTick = setUpKeys([
       rotateCamera(rotationSpeed)
     },
   },
-])
+  {
+    key: "w",
+    handler: (deltaTime) => rpgPlayer.velocity[1] = 1,
+  },
+  {
+    key: "a",
+    handler: (deltaTime) => rpgPlayer.velocity[0] = -1,
+  },
+  {
+    key: "s",
+    handler: (deltaTime) => rpgPlayer.velocity[1] = -1,
+  },
+  {
+    key: "d",
+    handler: (deltaTime) => rpgPlayer.velocity[0] = 1,
+  },
+],
+  [],
+  [
+    {
+      key: "w",
+      handler: (deltaTime) => rpgPlayer.velocity[1] = 0,
+    },
+    {
+      key: "a",
+      handler: (deltaTime) => rpgPlayer.velocity[0] = 0,
+    },
+    {
+      key: "s",
+      handler: (deltaTime) => rpgPlayer.velocity[1] = 0,
+    },
+    {
+      key: "d",
+      handler: (deltaTime) => rpgPlayer.velocity[0] = 0,
+    },
+  ])
 
 const light = new THREE.AmbientLight(0x404040) // soft white light
 const pointLight = new THREE.PointLight(0xffffff, 50, 500)
 pointLight.position.set(0, 0, 10)
 
 const loader = new GLTFLoader()
+let avocado: THREE.Object3D | undefined = undefined
 loader.load(
   "/avocado/Avocado.gltf",
   (gltf: any) => {
@@ -175,6 +214,7 @@ loader.load(
     gltf.scene.scale.set(10, 10, 10)
     gltf.scene.position.set(0, 0, 1)
     scene.add(gltf.scene)
+    avocado = gltf.scene
   },
   // called while loading is progressing
   function (xhr: any) {
@@ -211,10 +251,14 @@ scene.add(pointLight)
 
 scene.background = new THREE.Color(0xffffff)
 
+let lastFrameTime = performance.now()
+
 function animate() {
+  const frameTime = performance.now()
+  const deltaTime = (frameTime - lastFrameTime) / 1000
   requestAnimationFrame(animate)
 
-  controlsOnGameTick()
+  controlsOnGameTick(deltaTime)
   world.fixedStep()
 
   // the sphere y position shows the sphere falling
@@ -224,8 +268,14 @@ function animate() {
 
   updateDebugText(camera)
   updateCamera()
+  rpgPlayer.update(deltaTime)
+
+  if (avocado) {
+    avocado.position.fromArray(rpgPlayer.position)
+  }
 
   renderer.render(scene, camera)
   frame++
+  lastFrameTime = frameTime
 }
 animate()
